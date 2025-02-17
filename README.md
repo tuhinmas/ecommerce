@@ -29,6 +29,7 @@ List Implementation Concept:
 - Locking (Row Level Locking) with strategy to prevent deadlock
 - Unit Test
 - Logging with Grafana, Loki, Promtail
+- Migration
 - Docker Compose
 - Sample Script CI/CD with Github Actions
 - Sample Script CI/CD with Jenkins
