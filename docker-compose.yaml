@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  mysql:
+    container_name: mysql-local
+    image: mysql:8.0.32
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql.cnf:/etc/mysql/conf.d/my.cnf
+    ports:
+      - '3307:3306'
+    environment:
+      - MYSQL_ROOT_PASSWORD=opklnm123
+    networks:
+      - bubble
+
+  loki:
+      image: grafana/loki:latest
+      ports:
+        - "3100:3100"
+      command: -config.file=/etc/loki/local-config.yaml
+      networks:
+        - bubble
+
+  promtail:
+    image: grafana/promtail:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+      - /var/log:/var/log
+    command: -config.file=/etc/promtail/config.yml
+    networks:
+      - bubble
+
+  ecommerce-service:
+    container_name: ecommerce-service
+    restart: always
+    volumes:
+      - .:/app
+    build:
+      context: .
+      dockerfile: cmd/DockerfileDev
+    ports:
+      - '5004:5004'
+    networks:
+      - bubble
+    depends_on:
+      - mysql
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq-local
+    ports:
+      - 5672:5672
+      - 15672:15672
+    networks:
+      - bubble
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=bonjour
+      - RABBITMQ_DEFAULT_PASS=bonjour123
+
+  grafana:
+    environment:
+      - GF_PATHS_PROVISIONING=/etc/grafana/provisioning
+      - GF_AUTH_ANONYMOUS_ENABLED=false
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    entrypoint:
+      - sh
+      - -euc
+      - |
+        mkdir -p /etc/grafana/provisioning/datasources
+        cat <<EOF > /etc/grafana/provisioning/datasources/ds.yaml
+        apiVersion: 1
+        datasources:
+        - name: Loki
+          type: loki
+          access: proxy 
+          orgId: 1
+          url: http://loki:3100
+          basicAuth: false
+          isDefault: true
+          version: 1
+          editable: false
+        EOF
+        /run.sh
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    networks:
+      - bubble
+
+
+volumes:
+  mysql_data:
+
+networks:
+  bubble:
