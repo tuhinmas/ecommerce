@@ -25,7 +25,7 @@ List API:
 List Implementation Concept:
 - Release Stock with RabbitMQ DLX (Dead Letter Exchange) / DLQ (Dead Letter Queue) if payment is not made within a specified time 
 - Concurrency when update stock
-- Locking Row
+- Locking (Row Level Locking) with strategy to prevent deadlock
 - Unit Test
 - Logging with Grafana, Loki, Promtail
 - Docker Compose
