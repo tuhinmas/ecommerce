@@ -9,9 +9,9 @@ Tech:
 - MySQL
 - Docker
 - RabbitMQ
-- Logging (Grafana, Loki, Promtail)
+- Grafana, Loki, Promtail
 
-List Highlight Feature / API / Concept:
+List API:
 - Registration User
 - Login User
 - List Product
@@ -21,9 +21,16 @@ List Highlight Feature / API / Concept:
 - Change Status Warehouse
 - Create Stock
 - Update Stock
-- Release Stock Using RabbitMQ DLX (Dead Letter Exchange) / DLQ (Dead Letter Queue) if payment is not made within a specified time 
+
+List Implementation Concept:
+- Release Stock with RabbitMQ DLX (Dead Letter Exchange) / DLQ (Dead Letter Queue) if payment is not made within a specified time 
 - Concurrency when update stock
 - Locking Row
+- Unit Test
+- Logging with Grafana, Loki, Promtail
+- Docker Compose
+- Sample Script CI/CD with Github Actions
+- Sample Script CI/CD with Jenkins
 
 ## Install Migration
 
