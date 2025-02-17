@@ -23,6 +23,7 @@ List API:
 - Update Stock
 
 List Implementation Concept:
+- Gracefully Shutdown
 - Release Stock with RabbitMQ DLX (Dead Letter Exchange) / DLQ (Dead Letter Queue) if payment is not made within a specified time 
 - Concurrency when update stock
 - Locking (Row Level Locking) with strategy to prevent deadlock
