@@ -17,10 +17,10 @@ on:
       - development
 
 env:
-  servicename: 'my-service-github'
-  projectdocker: 'ciao'
+  servicename: 'ecommerce'
+  projectdocker: 'ecommerce'
   dockerapppath: '/root/'
-  dockernetwork: 'ciao'
+  dockernetwork: 'ecommerce'
 
 jobs:
   deploy_staging:
