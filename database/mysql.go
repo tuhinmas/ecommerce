@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"time"
 
 	"ecommerce/pkg/config"
 
@@ -19,6 +20,12 @@ func InitDatabase(config *config.Config) *Database {
 	if err != nil {
 		panic("failed to connect database")
 	}
+
+	// Konfigurasi connection pool
+	database.SetMaxOpenConns(100)                // Maksimal koneksi yang dibuka / dibuat
+	database.SetMaxIdleConns(25)                 // Maksimal koneksi idle (connection yang menunggu di pool)
+	database.SetConnMaxLifetime(5 * time.Minute) // Maksimal umur koneksi
+	database.SetConnMaxIdleTime(2 * time.Minute) // Maksimal waktu koneksi idle
 
 	return &Database{
 		database,
