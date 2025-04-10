@@ -2,15 +2,17 @@ version: '3.8'
 
 services:
   mysql:
-    container_name: mysql-local
-    image: mysql:8.0.32
+    image: mysql:8.0.35
     volumes:
       - mysql_data:/var/lib/mysql
       - ./mysql.cnf:/etc/mysql/conf.d/my.cnf
     ports:
-      - '3307:3306'
+      - '3309:3306'
     environment:
-      - MYSQL_ROOT_PASSWORD=opklnm123
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ALLOW_EMPTY_PASSWORD: "true"
     networks:
       - bubble
 

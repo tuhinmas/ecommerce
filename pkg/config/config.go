@@ -11,11 +11,11 @@ import (
 )
 
 type Config struct {
-	DatabaseUser     string `envconfig:"DATABASE_USER" default:"root"`
-	DatabasePassword string `envconfig:"DATABASE_PASSWORD" default:"opklnm123"`
-	DatabaseHost     string `envconfig:"DATABASE_HOST" default:"mysql-local"`
-	DatabaseName     string `envconfig:"DATABASE_NAME" default:"dating"`
-	DatabasePort     string `envconfig:"DATABASE_PORT" default:"5432"`
+	DatabaseUser     string `envconfig:"DB_USERNAME" default:"root"`
+	DatabasePassword string `envconfig:"DB_PASSWORD" default:"root"`
+	DatabaseHost     string `envconfig:"DB_HOST" default:"mysql"`
+	DatabaseName     string `envconfig:"DB_DATABASE" default:"e-commerce"`
+	DatabasePort     string `envconfig:"DB_PORT" default:"3306"`
 }
 
 func SetupEnvFile() *Config {

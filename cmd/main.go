@@ -53,6 +53,11 @@ func main() {
 	fmt.Println("Loading database")
 	db := database.InitDatabase(envConfig)
 
+	fmt.Println("Migrate table")
+	if err := database.RunMigrations(db); err != nil {
+		log.Fatalf("failed to migrate: %v", err)
+	}
+
 	fmt.Println("Loading worker")
 	rmq := broker.NewConnection(workerConfig)
 	err := rmq.Connect()

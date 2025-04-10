@@ -8,6 +8,10 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
+
+	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
 )
 
 type Database struct {
@@ -18,7 +22,8 @@ func InitDatabase(config *config.Config) *Database {
 	dsn := getDataSourceName(config)
 	database, err := sqlx.Connect("mysql", dsn)
 	if err != nil {
-		panic("failed to connect database")
+		// panic("failed to connect database")
+		panic(err.Error())
 	}
 
 	// Konfigurasi connection pool
@@ -41,4 +46,27 @@ func getDataSourceName(config *config.Config) string {
 		config.DatabasePort,
 		config.DatabaseName,
 	)
+}
+func RunMigrations(db *Database) error {
+	sqlDB := db.DB
+
+	driver, err := mysql.WithInstance(sqlDB.DB, &mysql.Config{})
+	if err != nil {
+		return err
+	}
+
+	m, err := migrate.NewWithDatabaseInstance(
+		"file://./migrations",
+		"mysql",
+		driver,
+	)
+	if err != nil {
+		return err
+	}
+
+	if err := m.Up(); err != nil && err != migrate.ErrNoChange {
+		return err
+	}
+
+	return nil
 }
