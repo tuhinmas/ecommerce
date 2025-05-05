@@ -48,6 +48,7 @@ services:
       - bubble
     depends_on:
       - mysql
+      - rabbitmq
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
