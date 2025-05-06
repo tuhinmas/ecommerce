@@ -17,13 +17,11 @@ import (
 	productRepository "ecommerce/internal/app/repository/product"
 	shopRepository "ecommerce/internal/app/repository/shop"
 	transactionRepository "ecommerce/internal/app/repository/transaction"
-	repository "ecommerce/internal/app/repository/user"
 	warehouseRepository "ecommerce/internal/app/repository/warehouse"
 	"ecommerce/internal/app/usecase/admin"
 	"ecommerce/internal/app/usecase/product"
 	"ecommerce/internal/app/usecase/shop"
 	"ecommerce/internal/app/usecase/transaction"
-	"ecommerce/internal/app/usecase/user"
 	"ecommerce/internal/app/usecase/warehouse"
 	"ecommerce/internal/app/worker"
 	handler "ecommerce/internal/delivery"
@@ -37,6 +35,8 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
+
+	userModule "ecommerce/cmd/modules/user"
 )
 
 func main() {
@@ -68,7 +68,6 @@ func main() {
 	identifier := identifier.NewIdentifier()
 	validator := validator.NewValidator(validatorv10.New())
 
-	repository := repository.NewUserRepository(db)
 	adminRepository := adminRepository.NewAdminRepository(db)
 	productRepository := productRepository.NewProductRepository(db)
 	transactionRepository := transactionRepository.NewTransactionRepository(db)
@@ -76,14 +75,12 @@ func main() {
 	shopRepository := shopRepository.NewShopRepository(db)
 
 	queueService := worker.NewQueueService(rmq, workerConfig, transactionRepository)
-	registerService := user.NewUserService(repository, validator, identifier)
 	transactionService := transaction.NewTransactionService(transactionRepository, validator, identifier, queueService)
 	productService := product.NewProductService(productRepository, validator, identifier)
 	warehouseService := warehouse.NewWarehouseService(warehouseRepository, validator)
 	adminService := admin.NewAdminService(adminRepository, validator, identifier)
 	shopService := shop.NewShopService(shopRepository, validator)
 
-	registerHandler := handler.NewUserHandler(registerService)
 	transactionHandler := handler.NewTransactionHandler(transactionService)
 	productHandler := handler.NewProductHandler(productService)
 	warehouseHandler := handler.NewWarehouseHandler(warehouseService)
@@ -92,7 +89,10 @@ func main() {
 
 	app := fiber.New()
 	routes.SetupRoutes(app)
-	routes.UserRouter(app, registerHandler)
+
+	/* login route */
+	userModule.InitModule(app, db, validator, identifier)
+
 	routes.TransactionRouter(app, transactionHandler)
 	routes.ProductRouter(app, productHandler)
 	routes.WarehouseRouter(app, warehouseHandler)
