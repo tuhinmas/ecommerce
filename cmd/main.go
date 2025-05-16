@@ -11,20 +11,9 @@ import (
 	"time"
 
 	broker "ecommerce/broker"
+	"ecommerce/cmd/modules"
 	"ecommerce/cmd/routes"
 	"ecommerce/database"
-	adminRepository "ecommerce/internal/app/repository/admin"
-	productRepository "ecommerce/internal/app/repository/product"
-	shopRepository "ecommerce/internal/app/repository/shop"
-	transactionRepository "ecommerce/internal/app/repository/transaction"
-	warehouseRepository "ecommerce/internal/app/repository/warehouse"
-	"ecommerce/internal/app/usecase/admin"
-	"ecommerce/internal/app/usecase/product"
-	"ecommerce/internal/app/usecase/shop"
-	"ecommerce/internal/app/usecase/transaction"
-	"ecommerce/internal/app/usecase/warehouse"
-	"ecommerce/internal/app/worker"
-	handler "ecommerce/internal/delivery"
 	"ecommerce/pkg/config"
 	"ecommerce/pkg/identifier"
 	"ecommerce/pkg/validator"
@@ -36,7 +25,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/swagger"
 
-	userModule "ecommerce/cmd/modules/user"
+	"ecommerce/cmd/modules/admin"
+	"ecommerce/cmd/modules/product"
+	"ecommerce/cmd/modules/shop"
+	"ecommerce/cmd/modules/transaction"
+	"ecommerce/cmd/modules/user"
+	"ecommerce/cmd/modules/warehouse"
 )
 
 func main() {
@@ -48,6 +42,7 @@ func main() {
 
 	envConfig := config.SetupEnvFile()
 	workerConfig := config.SetWorkerConfig()
+
 	logger.InitializeLogger()
 
 	fmt.Println("Loading database")
@@ -68,38 +63,28 @@ func main() {
 	identifier := identifier.NewIdentifier()
 	validator := validator.NewValidator(validatorv10.New())
 
-	adminRepository := adminRepository.NewAdminRepository(db)
-	productRepository := productRepository.NewProductRepository(db)
-	transactionRepository := transactionRepository.NewTransactionRepository(db)
-	warehouseRepository := warehouseRepository.NewWarehouseRepository(db)
-	shopRepository := shopRepository.NewShopRepository(db)
-
-	queueService := worker.NewQueueService(rmq, workerConfig, transactionRepository)
-	transactionService := transaction.NewTransactionService(transactionRepository, validator, identifier, queueService)
-	productService := product.NewProductService(productRepository, validator, identifier)
-	warehouseService := warehouse.NewWarehouseService(warehouseRepository, validator)
-	adminService := admin.NewAdminService(adminRepository, validator, identifier)
-	shopService := shop.NewShopService(shopRepository, validator)
-
-	transactionHandler := handler.NewTransactionHandler(transactionService)
-	productHandler := handler.NewProductHandler(productService)
-	warehouseHandler := handler.NewWarehouseHandler(warehouseService)
-	adminHandler := handler.NewAdminHandler(adminService)
-	shopHandler := handler.NewShopHandler(shopService)
-
 	app := fiber.New()
 	routes.SetupRoutes(app)
 
+	container := modules.SetContainerModules(app, db, validator, identifier, rmq, workerConfig)
+
 	/* login route */
-	userModule.InitModule(app, db, validator, identifier)
+	user.InitModule(container)
 
-	routes.TransactionRouter(app, transactionHandler)
-	routes.ProductRouter(app, productHandler)
-	routes.WarehouseRouter(app, warehouseHandler)
-	routes.AdminRouter(app, adminHandler)
-	routes.ShopRouter(app, shopHandler)
+	/* product route */
+	product.InitModule(container)
 
-	go queueService.ConsumeData(context.Background(), workerConfig.StockReversalQueue)
+	/* transaction route */
+	transaction.InitModule(container)
+
+	/* warehouse route */
+	warehouse.InitModule(container)
+
+	/* admin route */
+	admin.InitModule(container)
+
+	/* shop route */
+	shop.InitModule(container)
 
 	// Start the server in a separate goroutine
 	go func() {

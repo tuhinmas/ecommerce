@@ -1,10 +1,9 @@
 package database
 
 import (
+	"ecommerce/pkg/config"
 	"fmt"
 	"time"
-
-	"ecommerce/pkg/config"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
