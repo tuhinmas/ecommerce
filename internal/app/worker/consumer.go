@@ -7,6 +7,7 @@ import (
 	"ecommerce/pkg/logger"
 	"encoding/json"
 	"errors"
+	"log"
 	"strings"
 	"sync"
 
@@ -46,7 +47,7 @@ func (q queueService) ConsumeData(ctx context.Context, queueName string) (err er
 		case notifyErr := <-notify:
 			if notifyErr != nil {
 				// Log the error
-				//logger.LogError(constant.CONSUMER, constant.ErrConsumeQueueToBroker, notifyErr.Error(), "", "", "")
+				// logger.LogError(constant.CONSUMER, constant.ErrConsumeQueueToBroker, notifyErr.Error(), "", "", "")
 
 				// Try to reconnect
 				for i := 0; i < 3; i++ {
@@ -61,6 +62,7 @@ func (q queueService) ConsumeData(ctx context.Context, queueName string) (err er
 			switch msg.RoutingKey {
 			case q.cfg.StockReversalRoutingKey:
 				logger.LogInfo(constant.CONSUMER, "consume check stock reversal")
+				log.Println("queue_key", q.cfg.StockReversalRoutingKey)
 				var payloadQueue entity.PayloadOrderQueue
 				if err = json.Unmarshal(msg.Body, &payloadQueue); err != nil {
 					logger.LogError(constant.CONSUMER, err.Error(), payloadQueue, "", "")
